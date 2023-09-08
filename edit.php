@@ -1,133 +1,110 @@
-<?php 
+<?php  
 session_start();
 
 if (isset($_SESSION['id']) && isset($_SESSION['fname'])) {
-include "db_conn.php";
-include 'php/User.php';
 
-$user = getUserById($_SESSION['id'], $conn);
 
- ?>
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Edit Profile</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.js"></script>
-	<link rel="stylesheet" type="text/css" href="css/style.css">
-</head>
-<body>
-    <?php if ($user) { ?>
 
-    <div class="d-flex justify-content-center align-items-center vh-100">
+if(isset($_POST['fname']) && 
+   isset($_POST['uname'])){
+
+    include "../db_conn.php";
+
+    $fname = $_POST['fname'];
+    $uname = $_POST['uname'];
+    $email = $_POST['email'];
+    $phone = $_POST['phone'];
+    $ad = $_POST['ad'];
+    $dob = $_POST['dob'];
+    $old_pp = $_POST['old_pp'];
+    $id = $_SESSION['id'];
+
+    if (empty($fname)) {
+    	$em = "Full name is required";
+    	header("Location: ../edit.php?error=$em");
+	    exit;
+    }else if(empty($uname)){
+    	$em = "User name is required";
+    	header("Location: ../edit.php?error=$em");
+	    exit;
+    }else if(empty($email)){
+      $em = "Email is required";
+      header("Location: ../edit.php?error=$em");
+      exit;
+   }
+    else {
+     
+       
+      if (isset($_FILES['pp']['name']) AND !empty($_FILES['pp']['name'])) {
+         
         
-        <form class="shadow w-450 p-3" 
-              action="php/edit.php" 
-              method="post"
-              enctype="multipart/form-data">
+         $img_name = $_FILES['pp']['name'];
+         $tmp_name = $_FILES['pp']['tmp_name'];
+         $error = $_FILES['pp']['error'];
+         
+         if($error === 0){
+            $img_ex = pathinfo($img_name, PATHINFO_EXTENSION);
+            $img_ex_to_lc = strtolower($img_ex);
 
-            <h4 class="display-4  fs-1">Edit Profile</h4><br>
-            <!-- error -->
-            <?php if(isset($_GET['error'])){ ?>
-            <div class="alert alert-danger" role="alert">
-              <?php echo $_GET['error']; ?>
-            </div>
-            <?php } ?>
-            
-            <!-- success -->
-            <?php if(isset($_GET['success'])){ ?>
-            <div class="alert alert-success" role="alert">
-              <?php echo $_GET['success']; ?>
-            </div>
-            <?php } ?>
-          <div class="mb-3">
-            <label class="form-label">Full Name</label>
-            <input type="text" 
-                   class="form-control"
-                   name="fname"
-                   value="<?php echo $user['fname']?>">
-          </div>
+            $allowed_exs = array('jpg', 'jpeg', 'png');
+            if(in_array($img_ex_to_lc, $allowed_exs)){
+               $new_img_name = uniqid($uname, true).'.'.$img_ex_to_lc;
+               $img_upload_path = '../upload/'.$new_img_name;
+               // Delete old profile pic
+               $old_pp_des = "../upload/$old_pp";
+               if(unlink($old_pp_des)){
+               	  // just deleted
+               	  move_uploaded_file($tmp_name, $img_upload_path);
+               }else {
+                  // error or already deleted
+               	  move_uploaded_file($tmp_name, $img_upload_path);
+               }
+             
 
-          <div class="mb-3">
-            <label class="form-label">User name</label>
-            <input type="text" 
-                   class="form-control"
-                   name="uname"
-                   value="<?php echo $user['username']?>">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" 
-                   class="form-control"
-                   name="email"
-                   value="<?php echo $user['email']?>">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Phone No </label>
-            <input type="text" 
-                   class="form-control"
-                   name="phone"
-                   value="<?php echo $user['phone']?>">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Address</label>
-            <input type="text" 
-                   class="form-control"
-                   name="add"
-                   value="<?php echo $user['ad']?>">
-          </div>
-          
-          
-          <div class="mb-3">
-            <label class="form-label">Date of Birth</label>
-            <input type="date" 
-                   class="form-control"
-                   name="dob"
-                   value="<?php echo $user['dob']?>">
-          </div>
+               // update the Database
+               $sql = "UPDATE users 
+                       SET fname=?, username=?, email=?, phone=?, ad=?, dob=?, pp=?
+                       WHERE id=?";
+               $stmt = $conn->prepare($sql);
+               $stmt->execute([$fname, $uname, $email, $phone, $ad,  $dob, $new_img_name, $id]);
+               $_SESSION['fname'] = $fname;
+               header("Location: ../edit.php?success=Your account has been updated successfully");
+                exit;
+            }else {
+               $em = "You can't upload files of this type";
+               header("Location: ../edit.php?error=$em&$data");
+               exit;
+            }
+         }else {
+            $em = "unknown error occurred!";
+            header("Location: ../edit.php?error=$em&$data");
+            exit;
+         }
 
-          <div class="mb-3">
-            <label class="form-label">Profile Picture</label>
-            <input type="file" 
-                   class="form-control"
-                   name="pp">
-            <img src="upload/<?=$user['pp']?>"
-                 class="rounded-circle"
-                 style="width: 70px">
-            <input type="text"
-                   hidden="hidden" 
-                   name="old_pp"
-                   value="<?=$user['pp']?>" >
-          </div>
-          
-          <button type="submit" class="btn btn-primary">Update</button>
-          <a href="home.php" class="link-secondary">Home</a>
-        </form>
-        </div>
-    </div>
-    <?php }else{ 
-        ?>
-        <script>
         
-        swal.fire({
-        icon: 'success',
-                        title: 'success',
-                        text: 'Login sucessfully'
-        }).then(function() {
-            window.location = "welcome.php";
-        });
-                </script>
-                <?php
-        header("Location: home.php");
-        exit;
+      }else {
+        
+       
+       	$sql = "UPDATE users 
+       	        SET fname=?, username=?, email=?, phone=?, ad=?,  dob=?
+                WHERE id=?";
+       	$stmt = $conn->prepare($sql);
+       	$stmt->execute([$fname, $uname,  $email, $phone, $ad,  $dob, $id]);
 
-    } ?>
-</body>
-</html>
+       	header("Location: ../edit.php?success=Your account has been updated successfully");
+   	    exit;
+      }
+    }
 
-<?php }else {
+
+}else {
+	header("Location: ../edit.php?error=error");
+	exit;
+}
+
+
+}else {
 	header("Location: login.php");
 	exit;
-} ?>
+} 
+
