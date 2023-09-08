@@ -22,7 +22,7 @@ if(isset($_POST['fname']) &&
     
     if (empty($fname)) {
     	$em = "Full name is required";
-    	header("Location: ../index.php?error=$em&$data");
+    	header("Location: ../index.html?error=$em&$data");
 	    exit;
     }else if(empty($uname)){
     	$em = "User name is required";
@@ -30,27 +30,27 @@ if(isset($_POST['fname']) &&
 	    exit;
     }else if(empty($email)){
       $em = "email is required";
-      header("Location: ../index.php?error=$em&$data");
+      header("Location: ../index.html?error=$em&$data");
       exit;
    }
    else if(empty($phone)){
       $em = "Phone is required";
-      header("Location: ../index.php?error=$em&$data");
+      header("Location: ../index.html?error=$em&$data");
       exit;
    }
    else if(empty($ad)){
       $em = "Address is required";
-      header("Location: ../index.php?error=$em&$data");
+      header("Location: ../index.html?error=$em&$data");
       exit;
    }
    else if(empty($dob)){
       $em = "dob is required";
-      header("Location: ../index.php?error=$em&$data");
+      header("Location: ../index.html?error=$em&$data");
       exit;
    }
     else if(empty($pass)){
     	$em = "Password is required";
-    	header("Location: ../index.php?error=$em&$data");
+    	header("Location: ../index.html?error=$em&$data");
 	    exit;
     }else {
       // hashing the password
@@ -79,16 +79,16 @@ if(isset($_POST['fname']) &&
                $stmt = $conn->prepare($sql);
                $stmt->execute([$fname, $uname, $email, $phone, $ad, $dob, $pass, $new_img_name]);
 
-               header("Location: ../index.php?success=Your account has been created successfully");
+               header("Location: ../index.html?success=Your account has been created successfully");
                 exit;
             }else {
                $em = "You can't upload files of this type";
-               header("Location: ../index.php?error=$em&$data");
+               header("Location: ../index.html?error=$em&$data");
                exit;
             }
          }else {
             $em = "unknown error occurred!";
-            header("Location: ../index.php?error=$em&$data");
+            header("Location: ../index.html?error=$em&$data");
             exit;
          }
 
@@ -99,13 +99,13 @@ if(isset($_POST['fname']) &&
        	$stmt = $conn->prepare($sql);
        	$stmt->execute([$fname, $uname, $email, $phone, $ad, $dob, $pass]);
 
-       	header("Location: ../index.php?success=Your account has been created successfully");
+       	header("Location: ../index.html?success=Your account has been created successfully");
    	    exit;
       }
     }
 
 
 }else {
-	header("Location: ../index.php?error=error");
+	header("Location: ../index.html?error=error");
 	exit;
 }
