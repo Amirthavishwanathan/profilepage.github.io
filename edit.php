@@ -108,18 +108,7 @@ $user = getUserById($_SESSION['id'], $conn);
         </div>
     </div>
     <?php }else{ 
-        ?>
-        <script>
-        
-        swal.fire({
-        icon: 'success',
-                        title: 'success',
-                        text: 'Login sucessfully'
-        }).then(function() {
-            window.location = "welcome.php";
-        });
-                </script>
-                <?php
+       
         header("Location: home.php");
         exit;
 
